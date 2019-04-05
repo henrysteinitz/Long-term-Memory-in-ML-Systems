@@ -9,11 +9,21 @@
 \usepackage{url}            % simple URL typesetting
 \usepackage{booktabs}       % professional-quality tables
 \usepackage{amsfonts}       % blackboard math symbols
+\usepackage{amsmath}
 \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 \usepackage{microtype}      % microtypography
 \usepackage{lipsum}
 
-\title{Understanding Long-term Memory in ML Systems}
+\usepackage{amsthm}
+ 
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{theorem}
+\newtheorem{theorem}{Theorem}[section]
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+
+\title{Abstract Differentiable Memory}
 
 
 \author{
@@ -21,10 +31,9 @@
   \thanks{Use footnote for providing further
     information about author (webpage, alternative
     address)---\emph{not} for acknowledging funding agencies.} \\
-  Department of Computer Science\\
-  Cranberry-Lemon University\\
-  Pittsburgh, PA 15213 \\
-  \texttt{hippo@cs.cranberry-lemon.edu} \\
+    New York University, Google\\
+    New York, NY 15213 \\
+  \texttt{henrysteinitz@google.com} \\
   %% examples of more authors
   %% \AND
   %% Coauthor \\
@@ -47,21 +56,79 @@
 \maketitle
 
 \begin{abstract}
-Embeddings
-- Words embeddings
-- Graph embeddings
-Limitations 
-- linear embeddings lead to prohibitively large dimension
-- nonlinear limitations
-Embeddings in Hyperbolic geometry
-- 
+
 \end{abstract}
 
-\section{introduction}
+\section{Introduction}
 
-\section{Temporal Memory}
+Contemporary AI systems are composed of differentiable modules designed for specific tasks, such as perception, attention, and memory. They are often trained end-to-end by stochastic gradient descent, and each module is rarely tested individually at the task it was designed to perform.
 
-We begin with a simple model of long-term memory, where the goal is to remember a sequence of points $x_1, \dots, x_N$ by storing a representation 
+\section{Sequence Memory}
+
+We begin with a simple model of long-term memory, where the goal is to remember a sequence of points $x_1, \dots x_n$ from an input space $X$ by iteratively updating a running representation $m_i$ in a memory space $M$. Then, we'd like reverse this process to recover previous $x_i$ from $m_n$. Formally,
+
+\begin{definition}
+Let $X$ be a Riemannian manifold called the input space. A sequence memory $(M, \pi, \gamma)$ on $X$ is a Riemannian manifold $M$ with two smooth maps:
+\begin{itemize}
+    \item $\pi: M \times X \rightarrow M$ called the save map.
+    \item $\gamma: M \times [0, \infty) \rightarrow X$ called the recovery map.
+\end{itemize}
+\end{definition} 
+
+We use the closed interval $[0, \infty)$ because we want the recovery map to be differentiable. but any map $\gamma: M \times \bbZ_{\geq 0} \rightarrow X$ can be extended to map on $M \times [0, \infty)$ by interpolation. An alternative is to define the recovery map as $\gamma: M \rightarrow X \times M$ so that applying gamma returns the previously seen $x_i$ and a previous version on the memory $mi$. However, this would mean the complexity of $\gamma^t$ would be at least linear, and we ultimately want recovery to be sublinear in $t$.
+\par
+When the save and recovery maps are clear from context, we'll abbreviate $(M, \pi, \gamma)$ as $M$. It's likely useful to study sequence memory and other constructions in this work in a more general setting. For example, one may take $X$ and $M$ to be metric spaces or topological spaces. However, we're specifically interested in studying memory in differentiable systems, so we leave this for future work.
+\par
+Our definition induces the following iterated save maps
+\[
+\pi^n(M, x_1, \dots, x_n) = \pi(\pi^{n-1}(M, x_1, \dots, x_{n-1}), x_n),
+\]
+with $\pi^1 = \pi$. Similarly we can define the iterated recovery maps
+\[
+\gamma^n(M
+\]
+
+\subsection{Perfect sequence memory must be infinite dimensional}
+
+\begin{definition}
+A sequence memory $(M, \pi, \gamma)$ on $X$ is \textit{perfect} if for all sequences $x_1, \dots x_n$,
+\[
+\gamma(\pi^n(M, x_1, \dots, x_n), t) = x_t
+\]
+for all $t \in \bbZ_{>0}$
+\end{definition}
+ 
+The following simple result 
+\begin{theorem}
+Let $X$ be an input space with dimension $> 0$. Then if $M$ is a perfect memory on $X$, $M$ is infinite dimensional.
+\end{theorem}
+
+\begin{proof}
+For any sequence $x_1, \dots, x_n$
+\end{proof}
+
+\subsection{Evaluating sequence memory}
+
+\begin{definition}
+A sequence memory $(M, \pi, \gamma)$ is $k$\textit{-consistent} if 
+\[
+\norm{\gamma(M, t) - \gamma(\pi(M, x}, t+1) < O(t^k)
+\]
+\end{definition}
+
+\begin{theorem}
+If $M$ is k consistent, then
+\[
+\norm{\gamma(\pi^t(M, x_1, \dots, x_t), t - 1) - x_1} < O(t^{k+1})
+\]
+\end{theorem}
+
+\begin{proof}
+\begin{align*}
+\norm{\gamma(\pi^t(M, x_1, \dots, x_t), t - 1) - x_1} &=
+\norm{\sum_{k = 2}^t \gamma(\pi^k(M, x_1, \dots, x_k), k - 1) - \gamma(\pi^k-2(M, x_1, \dots, x_{k-2}), k - 2)}
+\end{align*}
+\end{proof}
 
 \section{Associative Memory}
 
